@@ -1,33 +1,42 @@
-  - name: Download the Influxdb Package
-    shell: curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key-add -
-    when: ansible_distribution == "Ubuntu"
+ ---
 
-  - name: Update again Ubuntu to read the Influxdb Package in Ubuntu
-    apt:
-      upgrade: dist
-      update_cache: yes
-    changed_when: false
-    when: ansible_distribution == "Ubuntu"
+- name: install apache and php (Ubuntu)
+  apt:
+    name:
+      - apache2
+      - libapache2-mod-php
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
 
-  - name: Install Influxdb in Ubuntu
-    apt:
-      name: influxdb
-      state: present
-    when: ansible_distribution == "Ubuntu"
+- name: install httpd nad php (CentOS)
+  dnf:
+    name:
+      - httpd
+      - php
+    state: latest
+  when: ansible_distribution == "CentOS"
 
-  - name: Download the Influxdb in CentOS
-    get_url:
-      url: https://repos.influxdata.com/rhel/8/x86_64/stable/influxdb-1.8.5.x86_64.rpm
-      dest: /tmp/influxdb-1.8.5.x86_64.rpm
-    when: ansible_distribution == "CentOS"
+- name: start httpd (CentOS)
+  service:
+    name: httpd
+    state: started
+  when: ansible_distribution == "CentOS"
 
-  - name: Install Influxdb in CentOS
-    yum:
-      name: /tmp/influxdb-1.8.5.x86_64.rpm
-      state: present
-    when: ansible_distribution == "CentOS"
+- name: install mariadb (CentOS)
+  yum:
+    name: mariadb-server
+    state: latest
+  when: ansible_distribution == "CentOS"
 
-  - name: Start Influxdb
-    service:
-      name: influxdb
-      state: restarted
+- name: install mariadb (Ubuntu)
+  apt:
+    name: mariadb-server
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+
+- name: "Mariadb - Restarting / Enabling"
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true
