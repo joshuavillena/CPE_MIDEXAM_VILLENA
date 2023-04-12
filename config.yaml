@@ -1,0 +1,75 @@
+---
+
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update repository index (CentOS)
+    tags: always
+    dnf:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "CentOS"
+
+  - name: update repository index (Ubuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: Ubuntu
+  become: true
+  tasks:
+    - name: Install pre-requisites
+      include_role:
+        name: pre_tasks
+
+- hosts: CentOS
+  become: true
+  tasks:
+    - name: Install pre-requisites
+      include_role:
+        name: pre_tasks
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Install Nagios for Ubuntu Servers
+      include_role:
+        name: nagios_ubuntu
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install Nagios for CentOS Servers
+      include_role:
+        name: nagios_centos
+      when: ansible_distribution == "CentOS"
+
+    - name: Install Prometheus for Ubuntu Servers
+      include_role:
+        name: prometheus_ubuntu
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install Prometheus for CentOS Servers
+      include_role:
+        name: prometheus_centos
+      when: ansible_distribution == "CentOS"
+
+- hosts: Ubuntu
+  become: true
+  tasks:
+    - name: Install Elastic stack on CentOS server
+      include_role:
+        name: Elastic 
+      when: ansible_distribution == "CentOS"
+
+    - name: Install Grafana on CentOS Server
+      include_role:
+        name: grafana
+      when: ansible_distribution == "CentOS"
+
+    - name: Install InfluxDB on CentOS Server
+      include_role:
+        name: influxdb
+      when: ansible_distribution == "CentOS"
